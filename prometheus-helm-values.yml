@@ -1,0 +1,296 @@
+server:
+  baseURL: https://metrics-serverless.wso2wso2stagingapps.com
+  retention: 1y
+  global:
+    scrape_interval: 15s
+alertmanager:
+  baseURL: https://alerts-serverless.wso2wso2stagingapps.com
+serviceAccounts:
+  pushgateway:
+    create: false
+pushgateway:
+  enabled: true
+serverFiles:
+  alerts:
+    groups:
+    - name: Metrics Scrape Success Check
+      rules:
+      - alert: Metrics Scrape Status
+        expr: up == 0
+        for: 3m
+        labels:
+          severity: Warning
+          type: Metrics Scrape Failed
+          target: '{{ $labels.job }}'
+        annotations:
+          summary: Unable to scrape metrics from {{ $labels.instance }}
+          description: Unable to gather metrics from {{ $labels.job }} ({{ $labels.instance }}) for 3 minutes
+    - name: Pod Ready Status Check
+      rules:
+      - alert: Pod Ready Status
+        expr: kube_pod_status_ready{condition="true"} == 0
+        for: 3m
+        labels:
+          severity: Warning
+          type: Pod Not Ready
+          target: '{{ $labels.pod }}'
+        annotations:
+          summary: Kubernetes Pod {{ $labels.pod }} not in Ready State
+          description: Kubernetes Pod {{ $labels.pod }} not in Ready State for 3 minutes
+    - name: Warning Level Resource Utilization
+      rules:
+      - alert: High CPU Utilization
+        expr: sum (rate (container_cpu_usage_seconds_total{id="/"}[5m])) by (kubernetes_io_hostname) * 100 / sum (machine_cpu_cores) by (kubernetes_io_hostname) > 75
+        for: 5m
+        labels:
+          severity: Warning
+          type: Low Resources (CPU)
+          target: '{{ $labels.kubernetes_io_hostname }}'
+        annotations:
+          summary: Available CPU is getting low
+          description: CPU usage had been over 75% for 5 minutes | Current usage is {{ $value | humanize }}%
+      - alert: High Memory Utilization
+        expr: sum (container_memory_working_set_bytes{id="/"}) by (kubernetes_io_hostname) * 100 / sum (machine_memory_bytes) by (kubernetes_io_hostname) > 85
+        for: 5m
+        labels:
+          severity: Warning
+          type: Low Resources (Memory)
+          target: '{{ $labels.kubernetes_io_hostname }}'
+        annotations:
+          summary: Available memory is getting low
+          description: Memory usage had been over 85% for 5 minutes | Current usage is {{ $value | humanize }} % ({{ query "sum (container_memory_working_set_bytes{id='/'})" | first | value | humanize1024 }}B)
+      - alert: High Disk Utilization
+        expr: sum (container_fs_usage_bytes{device=~"^/dev/[sv]d[a-z][1-9]$",id="/"}) by (kubernetes_io_hostname) * 100 / sum (container_fs_limit_bytes{device=~"^/dev/[sv]d[a-z][1-9]$",id="/"}) by (kubernetes_io_hostname) > 75
+        for: 5m
+        labels:
+          severity: Warning
+          type: Low Resources (Disk)
+          target: '{{ $labels.kubernetes_io_hostname }}'
+        annotations:
+          summary: Available disk space is getting low
+          description: Disk usage had been over 75% for 5 minutes | Current usage is {{ $value | humanize }} % ({{ query "sum (container_fs_usage_bytes{device=~'^/dev/[sv]d[a-z][1-9]$',id='/'})" | first | value | humanize1024 }}B)
+    - name: Critical Level Resource Utilization
+      rules:
+      - alert: High CPU Utilization
+        expr: sum (rate (container_cpu_usage_seconds_total{id="/"}[5m])) by (kubernetes_io_hostname) * 100 / sum (machine_cpu_cores) by (kubernetes_io_hostname) > 85
+        for: 5m
+        labels:
+          severity: Critical
+          type: Low Resources (CPU)
+          target: '{{ $labels.kubernetes_io_hostname }}'
+        annotations:
+          summary: Available CPU is at Critical Levels
+          description: CPU usage had been over 85% for 5 minutes | Current usage is {{ $value | humanize }}%
+      - alert: High Memory Utilization
+        expr: sum (container_memory_working_set_bytes{id="/"}) by (kubernetes_io_hostname) * 100 / sum (machine_memory_bytes) by (kubernetes_io_hostname) > 90
+        for: 5m
+        labels:
+          severity: Critical
+          type: Low Resources (Memory)
+          target: '{{ $labels.kubernetes_io_hostname }}'
+        annotations:
+          summary: Available memory is at Critical Levels
+          description: Memory usage had been over 90% for 5 minutes | Current usage is {{ $value | humanize }} % ({{ query "sum (container_memory_working_set_bytes{id='/'})" | first | value | humanize1024 }}B)
+      - alert: High Disk Utilization
+        expr: sum (container_fs_usage_bytes{device=~"^/dev/[sv]d[a-z][1-9]$",id="/"}) by (kubernetes_io_hostname) * 100 / sum (container_fs_limit_bytes{device=~"^/dev/[sv]d[a-z][1-9]$",id="/"}) by (kubernetes_io_hostname) > 85
+        for: 5m
+        labels:
+          severity: Critical
+          type: Low Resources (Disk)
+          target: '{{ $labels.kubernetes_io_hostname }}'
+        annotations:
+          summary: Available disk space is at Critical Levels
+          description: Disk usage had been over 85% for 5 minutes | Current usage is {{ $value | humanize }} % ({{ query "sum (container_fs_usage_bytes{device=~'^/dev/[sv]d[a-z][1-9]$',id='/'})" | first | value | humanize1024 }}B)
+  prometheus.yml:
+    scrape_configs:
+      - job_name: openwhisk-system
+        static_configs:
+        - targets:
+          - prometheus-statsd-exporter.openwhisk.svc.cluster.local:9102
+      - job_name: grafana
+        static_configs:
+        - targets:
+          - grafana.openwhisk.svc.cluster.local:80
+        # Since Helm doesn't support deep merge of lists the following items need to be added as well.
+      - job_name: prometheus
+        static_configs:
+        - targets:
+          - localhost:9090
+      - bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        job_name: kubernetes-apiservers
+        kubernetes_sd_configs:
+        - role: endpoints
+        relabel_configs:
+        - action: keep
+          regex: default;kubernetes;https
+          source_labels:
+          - __meta_kubernetes_namespace
+          - __meta_kubernetes_service_name
+          - __meta_kubernetes_endpoint_port_name
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+      - bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        job_name: kubernetes-nodes
+        kubernetes_sd_configs:
+        - role: node
+        relabel_configs:
+        - action: labelmap
+          regex: __meta_kubernetes_node_label_(.+)
+        - replacement: kubernetes.default.svc:443
+          target_label: __address__
+        - regex: (.+)
+          replacement: /api/v1/nodes/${1}/proxy/metrics
+          source_labels:
+          - __meta_kubernetes_node_name
+          target_label: __metrics_path__
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+      - bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        job_name: kubernetes-nodes-cadvisor
+        kubernetes_sd_configs:
+        - role: node
+        relabel_configs:
+        - action: labelmap
+          regex: __meta_kubernetes_node_label_(.+)
+        - replacement: kubernetes.default.svc:443
+          target_label: __address__
+        - regex: (.+)
+          replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+          source_labels:
+          - __meta_kubernetes_node_name
+          target_label: __metrics_path__
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+      - job_name: kubernetes-service-endpoints
+        kubernetes_sd_configs:
+        - role: endpoints
+        relabel_configs:
+        - action: keep
+          regex: true
+          source_labels:
+          - __meta_kubernetes_service_annotation_prometheus_io_scrape
+        - action: replace
+          regex: (https?)
+          source_labels:
+          - __meta_kubernetes_service_annotation_prometheus_io_scheme
+          target_label: __scheme__
+        - action: replace
+          regex: (.+)
+          source_labels:
+          - __meta_kubernetes_service_annotation_prometheus_io_path
+          target_label: __metrics_path__
+        - action: replace
+          regex: ([^:]+)(?::\d+)?;(\d+)
+          replacement: $1:$2
+          source_labels:
+          - __address__
+          - __meta_kubernetes_service_annotation_prometheus_io_port
+          target_label: __address__
+        - action: labelmap
+          regex: __meta_kubernetes_service_label_(.+)
+        - action: replace
+          source_labels:
+          - __meta_kubernetes_namespace
+          target_label: kubernetes_namespace
+        - action: replace
+          source_labels:
+          - __meta_kubernetes_service_name
+          target_label: kubernetes_name
+      - honor_labels: true
+        job_name: prometheus-pushgateway
+        kubernetes_sd_configs:
+        - role: service
+        relabel_configs:
+        - action: keep
+          regex: pushgateway
+          source_labels:
+          - __meta_kubernetes_service_annotation_prometheus_io_probe
+      - job_name: kubernetes-services
+        kubernetes_sd_configs:
+        - role: service
+        metrics_path: /probe
+        params:
+          module:
+          - http_2xx
+        relabel_configs:
+        - action: keep
+          regex: true
+          source_labels:
+          - __meta_kubernetes_service_annotation_prometheus_io_probe
+        - source_labels:
+          - __address__
+          target_label: __param_target
+        - replacement: blackbox
+          target_label: __address__
+        - source_labels:
+          - __param_target
+          target_label: instance
+        - action: labelmap
+          regex: __meta_kubernetes_service_label_(.+)
+        - source_labels:
+          - __meta_kubernetes_namespace
+          target_label: kubernetes_namespace
+        - source_labels:
+          - __meta_kubernetes_service_name
+          target_label: kubernetes_name
+      - job_name: kubernetes-pods
+        kubernetes_sd_configs:
+        - role: pod
+        relabel_configs:
+        - action: keep
+          regex: true
+          source_labels:
+          - __meta_kubernetes_pod_annotation_prometheus_io_scrape
+        - action: replace
+          regex: (.+)
+          source_labels:
+          - __meta_kubernetes_pod_annotation_prometheus_io_path
+          target_label: __metrics_path__
+        - action: replace
+          regex: ([^:]+)(?::\d+)?;(\d+)
+          replacement: $1:$2
+          source_labels:
+          - __address__
+          - __meta_kubernetes_pod_annotation_prometheus_io_port
+          target_label: __address__
+        - action: labelmap
+          regex: __meta_kubernetes_pod_label_(.+)
+        - action: replace
+          source_labels:
+          - __meta_kubernetes_namespace
+          target_label: kubernetes_namespace
+        - action: replace
+          source_labels:
+          - __meta_kubernetes_pod_name
+          target_label: kubernetes_pod_name
+alertmanagerFiles:
+  alertmanager.yml:
+    receivers:
+    - name: noop-receiver
+    - name: email-receiver
+#      email_configs:
+#      - to: johndoe@wso2.com
+#        from: alerts@wso2.com
+#        smarthost: smtp.gmail.com:587
+#        auth_username: username
+#        auth_identity: identity
+#        auth_password: password
+#        headers:
+#          Subject: '[ALERT][{{ .GroupLabels.severity | toUpper }}][Serverless Platform] {{ .GroupLabels.type }} - {{ .GroupLabels.target }}'
+    route:
+      receiver: noop-receiver
+      routes:
+      - receiver: email-receiver
+        group_wait: 2m
+        group_interval: 30m
+        repeat_interval: 1h
+        group_by:
+        - type
+        - severity
+        - target

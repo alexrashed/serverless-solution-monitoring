@@ -1,0 +1,66 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "prometheus-statsd-exporter.fullname" . }}
+  labels:
+    app: {{ template "prometheus-statsd-exporter.name" . }}
+    chart: {{ template "prometheus-statsd-exporter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "prometheus-statsd-exporter.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "prometheus-statsd-exporter.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - -statsd.listen-tcp=:{{ .Values.service.statsdTargetPort }}
+            - -statsd.listen-udp=:{{ .Values.service.statsdTargetPort }}
+            - -statsd.mapping-config=/etc/config/statsd_mapping.conf
+            - -web.listen-address=:{{ .Values.service.metricsTargetPort }}
+          ports:
+            - name: statsd
+              containerPort: {{ .Values.service.statsdTargetPort }}
+              protocol: UDP
+            - name: metrics
+              containerPort: {{ .Values.service.metricsTargetPort }}
+              protocol: TCP
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config
+          livenessProbe:
+            httpGet:
+              path: /
+              port: metrics
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ template "prometheus-statsd-exporter.fullname" . }}-statsd-mapping

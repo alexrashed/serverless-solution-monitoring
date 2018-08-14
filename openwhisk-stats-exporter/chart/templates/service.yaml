@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "openwhisk-stats-exporter.fullname" . }}
+  labels:
+    app: {{ template "openwhisk-stats-exporter.name" . }}
+    chart: {{ template "openwhisk-stats-exporter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ template "openwhisk-stats-exporter.name" . }}
+    release: {{ .Release.Name }}
