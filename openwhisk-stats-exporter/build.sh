@@ -1,14 +1,11 @@
 #!/bin/sh
 
 ####################### Start Common resources for all the scripts ####################
+source log4bash.sh
 
-CURRENT_DIR="$(cd $(dirname "$0")/ && pwd)"
-# In each script change below to reflect the correct WSP_HOME
-WSP_HOME=${WSP_HOME:-$CURRENT_DIR/../..}
-
-SCRIPTS_DIR="${WSP_HOME}/scripts"
-. ${SCRIPTS_DIR}/utils.sh
-
+function go_to_dir {
+  cd $1
+}
 ####################### End of Common resources for all the scripts ####################
 
 go_to_dir service

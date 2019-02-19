@@ -1,4 +1,4 @@
-appVersion: v0.6.0
+appVersion: v0.8.1
 description: A Helm chart for Prometheus StatsD Exporter
 name: prometheus-statsd-exporter
 version: 0.1.0

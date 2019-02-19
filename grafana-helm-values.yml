@@ -1,6 +1,4 @@
 grafana.ini:
-  server:
-    root_url: https://dashboards-serverless.wso2wso2stagingapps.com
   metrics:
     enabled: true
   users:
@@ -13,7 +11,7 @@ datasources:
   datasources.yaml:
     apiVersion: 1
     datasources:
-    - name: WSO2ServerlessPlatformMetrics
+    - name: OpenWhiskMetrics
       type: prometheus
       url: http://prometheus-server.openwhisk.svc.cluster.local:80
       access: proxy
@@ -39,7 +37,7 @@ dashboardProviders:
       options:
         path: /var/lib/grafana/dashboards/stats
 dashboards:
-  stats:
+  default:
     openwhisk-stats-dashboard:
       json: |
         {
@@ -48,7 +46,7 @@ dashboards:
               {
                 "$$hashKey": "object:200",
                 "builtIn": 1,
-                "datasource": "WSO2ServerlessPlatformMetrics",
+                "datasource": "OpenWhiskMetrics",
                 "enable": true,
                 "hide": true,
                 "iconColor": "rgba(0, 211, 255, 1)",
@@ -440,7 +438,7 @@ dashboards:
                     "$__all"
                   ]
                 },
-                "datasource": "WSO2ServerlessPlatformMetrics",
+                "datasource": "OpenWhiskMetrics",
                 "hide": 0,
                 "includeAll": true,
                 "label": "Language",
@@ -465,7 +463,7 @@ dashboards:
                     "$__all"
                   ]
                 },
-                "datasource": "WSO2ServerlessPlatformMetrics",
+                "datasource": "OpenWhiskMetrics",
                 "hide": 0,
                 "includeAll": true,
                 "label": "Action",
@@ -569,7 +567,7 @@ dashboards:
             "list": [
               {
                 "builtIn": 1,
-                "datasource": "WSO2ServerlessPlatformMetrics",
+                "datasource": "OpenWhiskMetrics",
                 "enable": true,
                 "hide": true,
                 "iconColor": "rgba(0, 211, 255, 1)",
@@ -594,7 +592,7 @@ dashboards:
                 "rgba(237, 129, 40, 0.89)",
                 "rgba(245, 54, 54, 0.9)"
               ],
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": false,
               "error": false,
@@ -681,7 +679,7 @@ dashboards:
                 "rgba(237, 129, 40, 0.89)",
                 "rgba(245, 54, 54, 0.9)"
               ],
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "editable": false,
               "error": false,
               "format": "percent",
@@ -768,7 +766,7 @@ dashboards:
                 "rgba(237, 129, 40, 0.89)",
                 "rgba(245, 54, 54, 0.9)"
               ],
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": false,
               "error": false,
@@ -857,7 +855,7 @@ dashboards:
                 "rgba(237, 129, 40, 0.89)",
                 "rgba(245, 54, 54, 0.9)"
               ],
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": false,
               "error": false,
@@ -944,7 +942,7 @@ dashboards:
                 "rgba(237, 129, 40, 0.89)",
                 "rgba(245, 54, 54, 0.9)"
               ],
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": false,
               "error": false,
@@ -1031,7 +1029,7 @@ dashboards:
                 "rgba(237, 129, 40, 0.89)",
                 "rgba(245, 54, 54, 0.9)"
               ],
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": false,
               "error": false,
@@ -1118,7 +1116,7 @@ dashboards:
                 "rgba(237, 129, 40, 0.89)",
                 "rgba(245, 54, 54, 0.9)"
               ],
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": false,
               "error": false,
@@ -1205,7 +1203,7 @@ dashboards:
                 "rgba(237, 129, 40, 0.89)",
                 "rgba(245, 54, 54, 0.9)"
               ],
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": false,
               "error": false,
@@ -1292,7 +1290,7 @@ dashboards:
                 "rgba(237, 129, 40, 0.89)",
                 "rgba(245, 54, 54, 0.9)"
               ],
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": false,
               "error": false,
@@ -1388,7 +1386,7 @@ dashboards:
               "bars": false,
               "dashLength": 10,
               "dashes": false,
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": true,
               "error": false,
@@ -1488,7 +1486,7 @@ dashboards:
               "bars": false,
               "dashLength": 10,
               "dashes": false,
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": true,
               "error": false,
@@ -1588,7 +1586,7 @@ dashboards:
               "bars": false,
               "dashLength": 10,
               "dashes": false,
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": true,
               "error": false,
@@ -1701,7 +1699,7 @@ dashboards:
               "bars": false,
               "dashLength": 10,
               "dashes": false,
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": true,
               "error": false,
@@ -1819,7 +1817,7 @@ dashboards:
                   "text": "All",
                   "value": "$__all"
                 },
-                "datasource": "WSO2ServerlessPlatformMetrics",
+                "datasource": "OpenWhiskMetrics",
                 "hide": 0,
                 "includeAll": true,
                 "label": "Node",
@@ -1879,7 +1877,7 @@ dashboards:
             "list": [
               {
                 "builtIn": 1,
-                "datasource": "WSO2ServerlessPlatformMetrics",
+                "datasource": "OpenWhiskMetrics",
                 "enable": true,
                 "hide": true,
                 "iconColor": "rgba(0, 211, 255, 1)",
@@ -1913,7 +1911,7 @@ dashboards:
               "bars": false,
               "dashLength": 10,
               "dashes": false,
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 3,
               "editable": true,
               "error": false,
@@ -2013,7 +2011,7 @@ dashboards:
               "bars": false,
               "dashLength": 10,
               "dashes": false,
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": true,
               "error": false,
@@ -2120,7 +2118,7 @@ dashboards:
                   "text": "All",
                   "value": "$__all"
                 },
-                "datasource": "WSO2ServerlessPlatformMetrics",
+                "datasource": "OpenWhiskMetrics",
                 "hide": 0,
                 "includeAll": true,
                 "label": "Node",
@@ -2180,7 +2178,7 @@ dashboards:
             "list": [
               {
                 "builtIn": 1,
-                "datasource": "WSO2ServerlessPlatformMetrics",
+                "datasource": "OpenWhiskMetrics",
                 "enable": true,
                 "hide": true,
                 "iconColor": "rgba(0, 211, 255, 1)",
@@ -2214,7 +2212,7 @@ dashboards:
               "bars": false,
               "dashLength": 10,
               "dashes": false,
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 3,
               "editable": false,
               "error": false,
@@ -2314,7 +2312,7 @@ dashboards:
               "bars": false,
               "dashLength": 10,
               "dashes": false,
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": false,
               "error": false,
@@ -2412,7 +2410,7 @@ dashboards:
               "bars": false,
               "dashLength": 10,
               "dashes": false,
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": false,
               "error": false,
@@ -2523,7 +2521,7 @@ dashboards:
               "bars": false,
               "dashLength": 10,
               "dashes": false,
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": false,
               "error": false,
@@ -2623,7 +2621,7 @@ dashboards:
               "bars": false,
               "dashLength": 10,
               "dashes": false,
-              "datasource": "WSO2ServerlessPlatformMetrics",
+              "datasource": "OpenWhiskMetrics",
               "decimals": 2,
               "editable": false,
               "error": false,
@@ -2731,7 +2729,7 @@ dashboards:
                   "text": "All",
                   "value": "$__all"
                 },
-                "datasource": "WSO2ServerlessPlatformMetrics",
+                "datasource": "OpenWhiskMetrics",
                 "hide": 0,
                 "includeAll": true,
                 "label": "Node",
@@ -2791,7 +2789,7 @@ dashboards:
             "list": [
               {
                 "builtIn": 1,
-                "datasource": "WSO2ServerlessPlatformMetrics",
+                "datasource": "OpenWhiskMetrics",
                 "enable": true,
                 "hide": true,
                 "iconColor": "rgba(0, 211, 255, 1)",
@@ -3936,7 +3934,7 @@ dashboards:
                   "text": "All",
                   "value": "$__all"
                 },
-                "datasource": "WSO2ServerlessPlatformMetrics",
+                "datasource": "OpenWhiskMetrics",
                 "hide": 2,
                 "includeAll": true,
                 "label": "Invoker Pod",
@@ -3959,7 +3957,7 @@ dashboards:
                   "text": "All",
                   "value": "$__all"
                 },
-                "datasource": "WSO2ServerlessPlatformMetrics",
+                "datasource": "OpenWhiskMetrics",
                 "hide": 2,
                 "includeAll": true,
                 "label": "Controller Pods",

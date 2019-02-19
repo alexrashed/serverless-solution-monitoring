@@ -1,10 +1,7 @@
 server:
-  baseURL: https://metrics-serverless.wso2wso2stagingapps.com
   retention: 1y
   global:
     scrape_interval: 15s
-alertmanager:
-  baseURL: https://alerts-serverless.wso2wso2stagingapps.com
 serviceAccounts:
   pushgateway:
     create: false

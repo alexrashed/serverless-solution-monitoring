@@ -24,10 +24,10 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
-            - -statsd.listen-tcp=:{{ .Values.service.statsdTargetPort }}
-            - -statsd.listen-udp=:{{ .Values.service.statsdTargetPort }}
-            - -statsd.mapping-config=/etc/config/statsd_mapping.conf
-            - -web.listen-address=:{{ .Values.service.metricsTargetPort }}
+            - --statsd.listen-tcp=:{{ .Values.service.statsdTargetPort }}
+            - --statsd.listen-udp=:{{ .Values.service.statsdTargetPort }}
+            - --statsd.mapping-config=/etc/config/statsd_mapping.conf
+            - --web.listen-address=:{{ .Values.service.metricsTargetPort }}
           ports:
             - name: statsd
               containerPort: {{ .Values.service.statsdTargetPort }}
